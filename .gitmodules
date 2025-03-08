@@ -3,9 +3,3 @@
 	url = https://github.com/Trifoia/oqtane.framework.git
 	branch = release/v6.1.0
 	ignore = all
-
-[submodule "BlazoredVideo"]
-	path = BlazoredVideo
-	url = https://github.com/Trifoia/BlazoredVideo.git
-	branch = release/net9
-	ignore = all
