@@ -1,0 +1,22 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>    
+    <Version>1.0.0</Version>
+    <Product>Trifoia.InkPlayer</Product>
+    <Authors>Trifoia</Authors>
+    <Company>Trifoia</Company>
+    <Description>Ink player</Description>
+    <Copyright>Trifoia</Copyright>
+    <AssemblyName>Trifoia.Module.InkPlayer.Shared.Oqtane</AssemblyName>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="System.ComponentModel.Annotations" Version="5.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="Oqtane.Shared"><HintPath>..\..\oqtane.framework\Oqtane.Server\bin\Debug\net9.0\Oqtane.Shared.dll</HintPath></Reference>
+  </ItemGroup>
+
+</Project>
