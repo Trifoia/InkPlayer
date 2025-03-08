@@ -3,3 +3,9 @@
 	url = https://github.com/Trifoia/oqtane.framework.git
 	branch = release/v6.1.0
 	ignore = all
+
+[submodule "ink"]
+	path = ink
+	url = https://github.com/trifoia/ink.git
+	branch = release/v1.2.0
+	ignore = all

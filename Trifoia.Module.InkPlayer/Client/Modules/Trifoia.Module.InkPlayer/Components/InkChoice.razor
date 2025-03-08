@@ -1,0 +1,103 @@
+﻿
+
+@namespace Trifoia.Module.InkPlayer
+
+@inherits ModuleControlBase
+
+@inject NavigationManager NavigationManager
+
+@switch (choiceType)
+{
+    default:
+    case ChoiceType.Button:
+        {
+            <MudButton Size="Size.Medium" Color="Color.Primary" Variant="Variant.Filled" OnClick="@(() => ChoiceSelected())">@Choice.Text</MudButton>
+            break;
+        }
+    case ChoiceType.ImageButton:
+        {
+            // Handle choices defined like this: "+ [#Image=someimage.png]"
+            // create image button instead of text button
+            var imageSource = GetTagValueByName(InkTag.Image) ?? string.Empty;
+            <MudButton OnClick="@(() => ChoiceSelected())" Class="choice-card image-button" Variant="Variant.Text">
+                <img src="@imageSource")" />
+            </MudButton>
+
+            break;
+        }
+
+}
+
+@code {
+    [Parameter]
+    public CustomInkChoice Choice { get; set; }
+
+    [Parameter]
+    public EventCallback<CustomInkChoice> OnSelected { get; set; }
+
+    enum ChoiceType
+    {
+        Button,
+        ImageButton
+    }
+
+    ChoiceType choiceType = ChoiceType.Button;
+
+    protected override void OnParametersSet()
+    {
+        choiceType = ChoiceType.Button;
+
+        if (Choice?.Tags != null)
+        {
+            // does it have an image?
+            var choiceTypeValue = GetTagValueByName(InkTag.Image);
+            if (!string.IsNullOrEmpty(choiceTypeValue))
+            {
+                choiceType = ChoiceType.ImageButton;
+            }
+        }
+    }
+
+    protected void ChoiceSelected()
+    {
+        // Handle Progress tags
+        if (HasTag(InkTag.ProgressComplete))
+        {
+            var progressPage = GetTagValueByName(InkTag.ProgressComplete) ?? PageState.Page.Name;
+            SiteState.Properties.ProgressUpdate = progressPage;
+        }
+     
+        // Handle Href tags
+        var url = GetTagValueByName(InkTag.Href);
+        if (!string.IsNullOrEmpty(url))
+        {
+            NavigationManager.NavigateTo(url);
+        }
+
+        OnSelected.InvokeAsync(Choice);
+    }
+
+
+    protected bool HasTag(string tagName)
+    {
+        if (Choice?.Tags == null || string.IsNullOrEmpty(tagName))
+            return false;
+
+        return Choice.Tags.Exists(t => t.StartsWith(tagName, StringComparison.InvariantCultureIgnoreCase));
+    }
+
+    protected string GetTag(string tagName)
+    {
+        if (Choice?.Tags == null || string.IsNullOrEmpty(tagName))
+            return null;
+
+        return Choice.Tags.FirstOrDefault(t => t.StartsWith(tagName, StringComparison.InvariantCultureIgnoreCase));
+    }
+
+    protected string GetTagValueByName(string tagName)
+    {
+        return GetTag(tagName)?.Substring(tagName.Length); // needs testing
+    }
+   
+
+}
