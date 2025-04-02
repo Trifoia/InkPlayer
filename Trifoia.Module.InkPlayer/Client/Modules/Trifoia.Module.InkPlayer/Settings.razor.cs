@@ -7,49 +7,88 @@ using Oqtane.Modules;
 using Oqtane.Services;
 using Oqtane.Models;
 using Oqtane.Shared;
+using Ink;
+using Oqtane.Interfaces;
 
 
 namespace Trifoia.Module.InkPlayer
-{ 
-    public partial class Settings: ModuleBase
+{
+    public partial class Settings : ModuleBase, ISettingsControl
     {
-        [Inject] public ISettingService SettingService { get; set; }
-        [Inject] public IStringLocalizer<Settings> Localizer{ get; set; }
-		
-		private string resourceType = "Trifoia.Module.InkPlayer.Settings, Trifoia.Module.InkPlayer.Client.Oqtane"; // for localization
-        public override string Title => "InkPlayer Settings";
-        private SettingsViewModel _settingsVM;
-        private bool _loading = true;
-        private string _value;
-        public override List<Resource> Resources => new List<Resource>()
-            {
-                new Resource { ResourceType = ResourceType.Stylesheet,  Url = "https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=swap" },
-                new Resource { ResourceType = ResourceType.Stylesheet,  Url = "_content/MudBlazor/MudBlazor.min.css" },
-                new Resource { ResourceType = ResourceType.Stylesheet,  Url = ModulePath() + "Module.css" },
-                new Resource { ResourceType = ResourceType.Script,     Url = "_content/MudBlazor/MudBlazor.min.js", Location = ResourceLocation.Body, Level = ResourceLevel.Site },
-                new Resource { ResourceType = ResourceType.Script,      Url = ModulePath() + "Module.js" },
-            };
+
+        public override string Title => "Ink Settings";
+
+        bool loading;
+        protected string _errorMessage;
+        SettingsViewModel _settingsVM;
+
+        [Inject] ISettingService SettingService { get; set; }
+        [Inject] NavigationManager NavigationManager { get; set; }
+
         protected override async Task OnInitializedAsync()
         {
+            loading = true;
+
             try
             {
                 var moduleSettings = await SettingService.GetModuleSettingsAsync(ModuleState.ModuleId);
                 _settingsVM = new SettingsViewModel(SettingService, moduleSettings);
-                _loading = false;
+
             }
             catch (Exception ex)
             {
-                AddModuleMessage(ex.Message, MessageType.Error);
+                await logger.LogError(ex, "Error Loading settings {Error}", ex.Message);
             }
+
+            CompileStory();
+
+            loading = false;
+        }
+
+        protected override void OnParametersSet()
+        {
+            if (!ShouldRender()) return;
+
+            var uri = new Uri(NavigationManager.Uri);
+            var query = System.Web.HttpUtility.ParseQueryString(uri.Query);
+            PageState.ReturnUrl = query.Get("returnUrl") ?? "/";
+        }
+
+
+        protected void CompileStory()
+        {
+            _errorMessage = "";
+
+            try
+            {
+                // add headers to the ink
+                var headers = InkFunctions.GetHeaders();
+                var ink = $"{headers}\n\n{_settingsVM.Ink}";
+
+                // compile the story
+                var compiler = new Compiler(ink);
+                var compiledStory = compiler.Compile();
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, "Error Loading settings {Error}", ex.Message);
+                _errorMessage = ex.Message;
+            }
+
+            StateHasChanged();
         }
 
         public async Task UpdateSettings()
         {
             try
             {
-                Dictionary<string, string> settings = await SettingService.GetModuleSettingsAsync(ModuleState.ModuleId);
+                var settings = await SettingService.GetModuleSettingsAsync(ModuleState.ModuleId);
+
                 _settingsVM.SetSettings(SettingService, settings);
+
                 await SettingService.UpdateModuleSettingsAsync(settings, ModuleState.ModuleId);
+
+                StateHasChanged();
             }
             catch (Exception ex)
             {

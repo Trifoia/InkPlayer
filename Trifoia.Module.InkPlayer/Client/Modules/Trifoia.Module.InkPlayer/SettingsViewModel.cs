@@ -8,19 +8,48 @@ using System.Threading.Tasks;
 
 namespace Trifoia.Module.InkPlayer
 {
+
     internal class SettingsViewModel
     {
         public SettingsViewModel(ISettingService settingService, Dictionary<string, string> moduleSettings)
         {
-            Value = settingService.GetSetting(moduleSettings, nameof(Value), Value);
+            Ink = settingService.GetSetting(moduleSettings, nameof(Ink), Ink);
+            string str = settingService.GetSetting(moduleSettings, nameof(InkTypo), InkTypo.ToString());
+            Typo inkTypo;
+            if (Enum.TryParse(str, out inkTypo))
+            {
+                InkTypo = inkTypo;
+            }
+            str = settingService.GetSetting(moduleSettings, nameof(CenterJustify), CenterJustify.ToString());
+            bool centerJustify;
+            if (bool.TryParse(str, out centerJustify))
+            {
+                CenterJustify = centerJustify;
+            }
+            str = settingService.GetSetting(moduleSettings, nameof(HasPrevious), HasPrevious.ToString());
+            bool hasPrevious;
+            if (bool.TryParse(str, out hasPrevious))
+            {
+                HasPrevious = hasPrevious;
+            }
+            ContinueText = settingService.GetSetting(moduleSettings, nameof(ContinueText), ContinueText);
         }
 
-        public string Value { get; set; } = string.Empty;
-   
-        public void SetSettings(ISettingService settingService, Dictionary<string, string> moduleSettings) {
+        public Typo InkTypo { get; set; } = Typo.inherit;
+        public bool CenterJustify { get; set; } = true;
+        public bool HasPrevious { get; set; } = false;
+        public string Ink { get; set; } = string.Empty;
+        public string ContinueText { get; set; } = "Continue";
 
-            settingService.SetSetting(moduleSettings, nameof(Value), Value);
-       
+        public void SetSettings(ISettingService settingService, Dictionary<string, string> moduleSettings)
+        {
+
+            settingService.SetSetting(moduleSettings, nameof(Ink), Ink);
+            settingService.SetSetting(moduleSettings, nameof(InkTypo), InkTypo.ToString());
+            settingService.SetSetting(moduleSettings, nameof(CenterJustify), CenterJustify.ToString());
+            settingService.SetSetting(moduleSettings, nameof(ContinueText), ContinueText);
+            settingService.SetSetting(moduleSettings, nameof(HasPrevious), HasPrevious.ToString());
+
         }
     }
 }

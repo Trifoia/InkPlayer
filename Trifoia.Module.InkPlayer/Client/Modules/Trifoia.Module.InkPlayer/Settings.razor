@@ -10,12 +10,45 @@
 
 @* Needed for snackbars
 <MudSnackbarProvider />*@
-@if(!_loading){
+
+@if (loading)
+{
+    <MudSkeleton SkeletonType="SkeletonType.Rectangle" Animation="Animation.Wave" />
+    <MudSkeleton SkeletonType="SkeletonType.Text" Animation="Animation.Wave" />
+    <MudSkeleton SkeletonType="SkeletonType.Text" Animation="Animation.Wave" />
+    <MudSkeleton SkeletonType="SkeletonType.Text" Animation="Animation.Wave" />
+}
+else
+{
     <div class="container">
+
         <div class="row mb-1 align-items-center">
-            <Label Class="col-sm-3" For="value" HelpText="Enter a value" ResourceKey="SettingName" ResourceType="@resourceType">Name: </Label>
+            <label class="form-label col-sm-3" for="ink-input">Ink: </label>
             <div class="col-sm-9">
-                <input id="value" type="text" class="form-control" @bind="@_settingsVM.Value" />
+                <textarea id="ink-input" class="form-control" @bind="@_settingsVM.Ink" @onfocusout="@CompileStory" rows="6" />
+            </div>
+        </div>
+
+        @if (!string.IsNullOrEmpty(_errorMessage))
+        {
+            <div class="alert alert-error">@($"Ink error: [{_errorMessage}]")</div>
+        }
+        <div class="row mb-1 align-items-center">
+            <label class="form-label col-sm-3" for="image-base">Typography: </label>
+            <div class="col-sm-9">
+                <select class="form-control" @bind="@_settingsVM.InkTypo">
+                    @foreach (var typo in Enum.GetValues<Typo>())
+                    {
+                        <option value="@typo">@typo.ToString()</option>
+                    }
+                </select>
+            </div>
+        </div>
+
+        <div class="row mb-1 align-items-center">
+            <label class="form-label col-sm-3" for="image-base">Continue Button Text: </label>
+            <div class="col-sm-9">
+                <input id="image-base" type="text" class="form-control" @bind="@_settingsVM.ContinueText" />
             </div>
         </div>
     </div>

@@ -10,49 +10,53 @@
 @* Needed for snackbars 
 <MudSnackbarProvider />*@
 
-@if (_list == null)
+@if (PageState.EditMode)
 {
-<p><em>Loading...</em></p>
+    <MudPaper Style="position:relative;" class="m-2">
+        <MudText Color="Color.Primary" Typo="Typo.h6">Ink Module</MudText>
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@MudBlazor.Icons.Material.Filled.Settings" Href="@settingsUrl">Settings</MudButton>
+    </MudPaper>
+}
+else if (loading)
+{
+    <MudSkeleton SkeletonType="SkeletonType.Rectangle" Animation="Animation.Wave" />
+    <MudSkeleton SkeletonType="SkeletonType.Text" Animation="Animation.Wave" />
+    <MudSkeleton SkeletonType="SkeletonType.Text" Animation="Animation.Wave" />
+    <MudSkeleton SkeletonType="SkeletonType.Text" Animation="Animation.Wave" />
 }
 else
 {
-<ActionLink Action="Add" Security="SecurityAccessLevel.Edit" Text="Add InkPlayer" ResourceKey="Add" />
-<br />
-<br />
-    @if (_list.Any())
-    {
-        <MudContainer MaxWidth="MaxWidth.ExtraLarge">
-            <MudText Class="mb-4">Enter data for the InkPlayer module</MudText>
-            <MudTable Items="@_list">
-                <ColGroup>
-                    <col style="width: 10px;" />
-                    <col style="width: 10px;" />
-                    <col />
-                </ColGroup>
-                <HeaderContent>
-                    <MudTh>&nbsp;</MudTh>
-                    <MudTh>&nbsp;</MudTh>
-                    <MudTh>@Localizer["Name"]</MudTh>
-                </HeaderContent>
-                <RowTemplate>
-                    <MudTd Class="pa-2"><ActionLink Action="Edit" Parameters="@($"id=" + context.InkPlayerId.ToString())" ResourceKey="Edit" /></MudTd>
-                    <MudTd Class="pa-2"><ActionDialog Header="Delete InkPlayer" Message="Are You Sure You Wish To Delete This InkPlayer?" Action="Delete" Security="SecurityAccessLevel.Edit" Class="btn btn-danger" OnClick="@(async () => await Delete(context))" ResourceKey="Delete" /></MudTd>
-                    <MudTd DataLabel="Nr">@context.Name</MudTd>
-                </RowTemplate>
-                <PagerContent>
-                    <MudPaper Outlined="true" Class="border-dashed">
-                        <MudStack Justify="Justify.SpaceBetween" Row="true">
-                            <MudPaper Class="pa-3"><ActionLink Action="Add" Security="SecurityAccessLevel.Edit" Text="Add InkPlayer" ResourceKey="Add" /></MudPaper>
-                            <MudPaper Class="pa-3"><MudTablePager PageSizeOptions="new int[]{10, 25, 50, 100}" /></MudPaper>
-                        </MudStack>
-                    </MudPaper>
-                </PagerContent>
-            </MudTable>
-        </MudContainer>
-    }
-    else
-    {
-        <MudPaper Class="pa-3"><ActionLink Action="Add" Security="SecurityAccessLevel.Edit" Text="Add InkPlayer" ResourceKey="Add" /></MudPaper>
-        <p>@Localizer["Message.DisplayNone"]</p>
-    }
+    <div class="ink-container">
+        <div class="prompt-card">
+            <MudText Class="prompt-text" data-center-text="@_settingsVM.CenterJustify.ToString()" Typo="@_settingsVM.InkTypo">@_currentLine</MudText>
+        </div>
+
+        @if (_currentChoices.Any())
+        {
+            <MudStack Row="true" AlignItems="AlignItems.Stretch" Justify="Justify.Center" Class="p-3" Wrap="Wrap.Wrap">
+                @if (_hasPrevious)
+                {
+                    <MudButton Size="Size.Large" Color="Color.Secondary" Variant="Variant.Filled" OnClick="Previous">Previous</MudButton>
+                }
+                @foreach (var choice in _currentChoices)
+                {
+                    <InkChoice Choice="choice" OnSelected="ChoiceSelected" />
+                }
+            </MudStack>
+        }
+        else if (_hasPrevious || _hasNext || _hasFinish)
+        {
+            <MudStack Row="true" AlignItems="AlignItems.Stretch" Justify="Justify.Center" Class="p-3" Wrap="Wrap.Wrap">
+                @if (_hasPrevious)
+                {
+                    <MudButton Size="Size.Large" Color="Color.Secondary" Variant="Variant.Filled" OnClick="Previous">Previous</MudButton>
+                }
+                @if (_hasNext)
+                {
+                    <MudButton Size="Size.Large" Color="Color.Primary" Variant="Variant.Filled" OnClick="@(() => Next())">@_settingsVM.ContinueText</MudButton>
+                }
+
+            </MudStack>
+        }
+    </div>
 }
